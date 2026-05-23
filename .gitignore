@@ -11,5 +11,8 @@ uv.lock
 state/session.json
 *.tmp
 
+# per-machine apply history + snapshots — not portable
+logs/
+
 # big cache for git clones during catalog update
 .tmp-clone/
