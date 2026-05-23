@@ -1,0 +1,154 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700" font-family="JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, monospace">
+<rect width="100%" height="100%" fill="#020617"/>
+
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" />
+          </marker>
+          <marker id="arrowhead-cyan" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#22d3ee" />
+          </marker>
+          <marker id="arrowhead-emerald" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#34d399" />
+          </marker>
+          <marker id="arrowhead-violet" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#a78bfa" />
+          </marker>
+          <marker id="arrowhead-amber" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#fbbf24" />
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <!-- Step arrows (drawn first; numbered) -->
+
+        <!-- 1. Browser → POST /apply -->
+        <line x1="180" y1="100" x2="280" y2="100" stroke="#22d3ee" stroke-width="2" marker-end="url(#arrowhead-cyan)"/>
+        <text x="230" y="92" fill="#22d3ee" font-size="9" text-anchor="middle" font-weight="600">① POST /apply</text>
+
+        <!-- 2. apply router → stage service (read cart) -->
+        <line x1="430" y1="100" x2="530" y2="100" stroke="#34d399" stroke-width="2" marker-end="url(#arrowhead-emerald)"/>
+        <text x="480" y="92" fill="#34d399" font-size="9" text-anchor="middle" font-weight="600">② read cart</text>
+
+        <!-- 3. apply.py loop per target -->
+        <line x1="680" y1="100" x2="780" y2="100" stroke="#34d399" stroke-width="2" marker-end="url(#arrowhead-emerald)"/>
+        <text x="730" y="92" fill="#34d399" font-size="9" text-anchor="middle" font-weight="600">③ ops by target</text>
+
+        <!-- 4. snapshot (vertical down from apply.py to snapshot box) -->
+        <line x1="830" y1="160" x2="830" y2="230" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrowhead-amber)"/>
+        <text x="845" y="200" fill="#fbbf24" font-size="9" font-weight="600">④ snapshot</text>
+        <text x="845" y="214" fill="#94a3b8" font-size="8">touched paths only</text>
+
+        <!-- 5. write to target (snapshot → claude_fs.write_*) -->
+        <line x1="830" y1="320" x2="830" y2="390" stroke="#fb7185" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#arrowhead)"/>
+        <text x="845" y="355" fill="#fb7185" font-size="9" font-weight="600">⑤ write</text>
+        <text x="845" y="369" fill="#94a3b8" font-size="8">claude_fs.install_skill</text>
+        <text x="845" y="381" fill="#94a3b8" font-size="8">install_statusline · etc</text>
+
+        <!-- 6. append history -->
+        <line x1="780" y1="450" x2="650" y2="450" stroke="#a78bfa" stroke-width="2" marker-end="url(#arrowhead-violet)"/>
+        <text x="715" y="442" fill="#a78bfa" font-size="9" text-anchor="middle" font-weight="600">⑥ append</text>
+
+        <!-- 7. return per-target results -->
+        <line x1="500" y1="450" x2="200" y2="450" stroke="#22d3ee" stroke-width="2" marker-end="url(#arrowhead-cyan)"/>
+        <text x="350" y="442" fill="#22d3ee" font-size="9" text-anchor="middle" font-weight="600">⑦ HTML partial (per-target results)</text>
+
+        <!-- Browser ↺ trigger refresh of installed + history panels -->
+        <path d="M 100 440 L 100 500 Q 100 530 130 530 L 870 530 Q 900 530 900 500 L 900 420" fill="none" stroke="#22d3ee" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#arrowhead-cyan)"/>
+        <text x="500" y="552" fill="#22d3ee" font-size="9" text-anchor="middle">⑧ JS triggers installed:refresh + history:refresh</text>
+
+        <!-- ===== Boxes ===== -->
+
+        <!-- Browser (cyan) -->
+        <rect x="50" y="60" width="130" height="80" rx="6" fill="#0f172a"/>
+        <rect x="50" y="60" width="130" height="80" rx="6" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="115" y="86" fill="white" font-size="12" font-weight="600" text-anchor="middle">Browser</text>
+        <text x="115" y="104" fill="#94a3b8" font-size="9" text-anchor="middle">Apply button</text>
+        <text x="115" y="116" fill="#94a3b8" font-size="9" text-anchor="middle">(in #cart)</text>
+        <text x="115" y="132" fill="#22d3ee" font-size="8" text-anchor="middle">hx-post="/apply"</text>
+
+        <!-- apply router (emerald) -->
+        <rect x="280" y="60" width="150" height="80" rx="6" fill="#0f172a"/>
+        <rect x="280" y="60" width="150" height="80" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="355" y="86" fill="white" font-size="12" font-weight="600" text-anchor="middle">apply router</text>
+        <text x="355" y="104" fill="#94a3b8" font-size="9" text-anchor="middle">routers/apply.py</text>
+        <text x="355" y="120" fill="#94a3b8" font-size="9" text-anchor="middle">apply_now()</text>
+        <text x="355" y="134" fill="#34d399" font-size="8" text-anchor="middle">@router.post("")</text>
+
+        <!-- stage service (emerald) -->
+        <rect x="530" y="60" width="150" height="80" rx="6" fill="#0f172a"/>
+        <rect x="530" y="60" width="150" height="80" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="605" y="86" fill="white" font-size="12" font-weight="600" text-anchor="middle">stage</text>
+        <text x="605" y="104" fill="#94a3b8" font-size="9" text-anchor="middle">services/stage.py</text>
+        <text x="605" y="120" fill="#94a3b8" font-size="9" text-anchor="middle">in-memory cart</text>
+        <text x="605" y="134" fill="#34d399" font-size="8" text-anchor="middle">keyed by session cookie</text>
+
+        <!-- apply service (emerald, central pipeline) -->
+        <rect x="780" y="60" width="170" height="100" rx="6" fill="#0f172a"/>
+        <rect x="780" y="60" width="170" height="100" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="2"/>
+        <text x="865" y="86" fill="white" font-size="13" font-weight="600" text-anchor="middle">apply pipeline</text>
+        <text x="865" y="104" fill="#94a3b8" font-size="9" text-anchor="middle">services/apply.py</text>
+        <text x="865" y="120" fill="#94a3b8" font-size="9" text-anchor="middle">apply_all(ops, targets)</text>
+        <text x="865" y="138" fill="#34d399" font-size="8" text-anchor="middle">groups ops by target_id</text>
+        <text x="865" y="152" fill="#34d399" font-size="8" text-anchor="middle">→ snapshot → do_op → log</text>
+
+        <!-- snapshot (amber — like a side cache) -->
+        <rect x="730" y="230" width="200" height="90" rx="6" fill="#0f172a"/>
+        <rect x="730" y="230" width="200" height="90" rx="6" fill="rgba(120, 53, 15, 0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="830" y="256" fill="white" font-size="12" font-weight="600" text-anchor="middle">snapshot</text>
+        <text x="830" y="274" fill="#94a3b8" font-size="9" text-anchor="middle">services/snapshot.py</text>
+        <text x="830" y="290" fill="#94a3b8" font-size="9" text-anchor="middle">copy touched paths to</text>
+        <text x="830" y="304" fill="#94a3b8" font-size="9" text-anchor="middle">logs/&lt;t&gt;/snapshots/&lt;cid&gt;/</text>
+        <text x="830" y="316" fill="#fbbf24" font-size="8" text-anchor="middle">enables revert</text>
+
+        <!-- target write (rose — trust boundary) -->
+        <rect x="680" y="390" width="280" height="80" rx="6" fill="#0f172a"/>
+        <rect x="680" y="390" width="280" height="80" rx="6" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="820" y="416" fill="white" font-size="12" font-weight="600" text-anchor="middle">target .claude/</text>
+        <text x="820" y="434" fill="#94a3b8" font-size="9" text-anchor="middle">~/.claude/ or &lt;project&gt;/.claude/</text>
+        <text x="820" y="450" fill="#94a3b8" font-size="9" text-anchor="middle">skills/ · settings.json · statusline.sh</text>
+        <text x="820" y="464" fill="#fb7185" font-size="8" text-anchor="middle">user-filesystem trust zone</text>
+
+        <!-- changelog (violet — storage) -->
+        <rect x="450" y="410" width="200" height="80" rx="6" fill="#0f172a"/>
+        <rect x="450" y="410" width="200" height="80" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="550" y="436" fill="white" font-size="12" font-weight="600" text-anchor="middle">changelog</text>
+        <text x="550" y="454" fill="#94a3b8" font-size="9" text-anchor="middle">services/changelog.py</text>
+        <text x="550" y="468" fill="#94a3b8" font-size="9" text-anchor="middle">append logs/&lt;t&gt;/history.jsonl</text>
+        <text x="550" y="482" fill="#a78bfa" font-size="8" text-anchor="middle">JSONL · one line per change</text>
+
+        <!-- Response: browser receives partial -->
+        <rect x="50" y="410" width="170" height="80" rx="6" fill="#0f172a"/>
+        <rect x="50" y="410" width="170" height="80" rx="6" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="135" y="436" fill="white" font-size="12" font-weight="600" text-anchor="middle">Browser</text>
+        <text x="135" y="454" fill="#94a3b8" font-size="9" text-anchor="middle">#apply-results</text>
+        <text x="135" y="468" fill="#94a3b8" font-size="9" text-anchor="middle">apply_results.html</text>
+        <text x="135" y="482" fill="#22d3ee" font-size="8" text-anchor="middle">flash + per-target rows</text>
+
+        <!-- Side-callout: error path -->
+        <rect x="50" y="600" width="900" height="60" rx="8" fill="transparent" stroke="#fb7185" stroke-width="1" stroke-dasharray="4,4"/>
+        <text x="64" y="620" fill="#fb7185" font-size="9" font-weight="600">error path (snapshot or write fails):</text>
+        <text x="64" y="638" fill="#94a3b8" font-size="9">_do_op returns {ok:false, error:…} per op; entry is still written to history.jsonl with the failure; UI shows red row in apply_results.</text>
+        <text x="64" y="652" fill="#94a3b8" font-size="9">snapshot has already happened — revert from the partial change_id will roll back what did succeed.</text>
+
+        <!-- Legend -->
+        <text x="40" y="685" fill="white" font-size="10" font-weight="600">Legend</text>
+        <rect x="100" y="678" width="16" height="10" rx="2" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1"/>
+        <text x="122" y="686" fill="#94a3b8" font-size="8">Browser</text>
+        <rect x="180" y="678" width="16" height="10" rx="2" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1"/>
+        <text x="202" y="686" fill="#94a3b8" font-size="8">Service / Router</text>
+        <rect x="295" y="678" width="16" height="10" rx="2" fill="rgba(120, 53, 15, 0.3)" stroke="#fbbf24" stroke-width="1"/>
+        <text x="317" y="686" fill="#94a3b8" font-size="8">Snapshot store</text>
+        <rect x="405" y="678" width="16" height="10" rx="2" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1"/>
+        <text x="427" y="686" fill="#94a3b8" font-size="8">Append-only log</text>
+        <rect x="525" y="678" width="16" height="10" rx="2" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1"/>
+        <text x="547" y="686" fill="#94a3b8" font-size="8">Target filesystem</text>
+        <line x1="640" y1="683" x2="664" y2="683" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <text x="670" y="686" fill="#94a3b8" font-size="8">Trust boundary write</text>
+        <line x1="790" y1="683" x2="814" y2="683" stroke="#22d3ee" stroke-width="1" stroke-dasharray="3,3"/>
+        <text x="820" y="686" fill="#94a3b8" font-size="8">Client-side trigger</text>
+      
+</svg>
