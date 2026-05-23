@@ -1,0 +1,9 @@
+{
+  "name": "architecture-diagram",
+  "description": "Create polished dark-themed architecture diagrams as self-contained HTML+SVG files.",
+  "source_git": "https://github.com/Cocoon-AI/architecture-diagram-generator",
+  "source_subpath": "architecture-diagram",
+  "version": "",
+  "sha": "4b9087d55268c79a935105439dbcd37b630fc3f3",
+  "last_updated": "2026-05-23T05:48:02.078248+00:00"
+}

@@ -1,16 +1,83 @@
 from __future__ import annotations
 from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
+from pathlib import Path
 
-from ..services import catalog_fs, templates_lib, skill_links
+from ..services import catalog_fs, templates_lib, skill_links, claude_fs
+from ..services.targets_store import list_tracked
 from ..templating import templates
 
 
 router = APIRouter(prefix="/catalog", tags=["catalog"])
 
 
+def _installed_state_for(target_id: str | None) -> dict:
+    """Compute which catalog entries are already present in <target>.
+
+    Returns a dict with keys:
+      installed_skills    – set of skill slugs in <target>/skills/
+      installed_statusline – the catalog slug whose script matches the target's
+                             configured statusLine.command, if any
+      scaffolded_docs     – set of doc-prompt kinds whose .md file exists at the
+                             project root (or for global, ~/.claude/)
+      target_label        – human label for the target, or '' if no target
+    """
+    state = {
+        "installed_skills": set(),
+        "installed_statusline": None,
+        "scaffolded_docs": set(),
+        "target_label": "",
+    }
+    if not target_id:
+        return state
+    target = next((t for t in list_tracked() if t.id == target_id), None)
+    if not target:
+        return state
+    state["target_label"] = target.label
+
+    # skills already in <target>/skills/
+    for s in claude_fs.list_installed_skills(target):
+        state["installed_skills"].add(s.get("name") or "")
+
+    # which catalog statusline matches what's configured on the target
+    sl = claude_fs.read_statusline(target)
+    resolved = sl.get("resolved_path") or ""
+    if resolved:
+        try:
+            current = Path(resolved).read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            current = None
+        if current is not None:
+            for entry in catalog_fs.list_statuslines():
+                p = Path(entry["path"]) / "statusline.sh"
+                if p.is_file():
+                    try:
+                        if p.read_text(encoding="utf-8", errors="replace") == current:
+                            state["installed_statusline"] = entry["slug"]
+                            break
+                    except OSError:
+                        pass
+
+    # for doc prompts, check whether the corresponding doc file exists in
+    # the project root (or ~/.claude/ for global). Doc prompts in templates_lib
+    # whose name starts with .claude/ are checked at the .claude/ path.
+    if target.kind == "project":
+        project_root = target.claude_dir.parent
+    else:
+        project_root = target.claude_dir  # ~/.claude/
+    for d in catalog_fs.list_doc_prompts():
+        kind = d["kind"]
+        # match root-level KIND.md or .claude/KIND.md
+        if (project_root / f"{kind}.md").is_file():
+            state["scaffolded_docs"].add(kind)
+        elif (target.claude_dir / f"{kind}.md").is_file():
+            state["scaffolded_docs"].add(kind)
+    return state
+
+
 @router.get("", response_class=HTMLResponse)
-def catalog_view(request: Request):
+def catalog_view(request: Request, target: str | None = None):
+    installed = _installed_state_for(target)
     return templates.TemplateResponse(
         request, "partials/catalog_panel.html",
         {
@@ -18,6 +85,8 @@ def catalog_view(request: Request):
             "statuslines": catalog_fs.list_statuslines(),
             "presets": catalog_fs.list_settings_presets(),
             "doc_prompts": catalog_fs.list_doc_prompts(),
+            "target_id": target,
+            "installed": installed,
         },
     )
 
@@ -293,7 +362,8 @@ def preset_del(request: Request, slug: str):
     return _full_catalog(request, flash=f"deleted preset {slug}")
 
 
-def _full_catalog(request: Request, flash: str | None = None) -> HTMLResponse:
+def _full_catalog(request: Request, flash: str | None = None, target: str | None = None) -> HTMLResponse:
+    target_id = target or request.query_params.get("target")
     return templates.TemplateResponse(
         request, "partials/catalog_panel.html",
         {
@@ -302,6 +372,8 @@ def _full_catalog(request: Request, flash: str | None = None) -> HTMLResponse:
             "presets": catalog_fs.list_settings_presets(),
             "doc_prompts": catalog_fs.list_doc_prompts(),
             "flash": flash,
+            "target_id": target_id,
+            "installed": _installed_state_for(target_id),
         },
     )
 

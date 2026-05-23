@@ -42,10 +42,12 @@ function ncApp() {
         localStorage.setItem("nc.selectedTargets", JSON.stringify(v));
         this._refreshInstalled();
         this._refreshHistory();
+        this._refreshCatalog();
       });
       // first render
       this._refreshInstalled();
       this._refreshHistory();
+      this._refreshCatalog();
     },
 
     toggleTarget(id) {
@@ -82,6 +84,14 @@ function ncApp() {
         return;
       }
       htmx.ajax("GET", `/history/${tid}`, { target: "#history-panel", swap: "innerHTML" });
+    },
+
+    _refreshCatalog() {
+      const panel = document.getElementById("catalog-panel");
+      if (!panel) return;
+      const tid = this._firstSelected();
+      const url = tid ? `/catalog?target=${encodeURIComponent(tid)}` : "/catalog";
+      htmx.ajax("GET", url, { target: "#catalog-panel", swap: "innerHTML" });
     },
 
     // Send a staged op via fetch. Catalog buttons call these.

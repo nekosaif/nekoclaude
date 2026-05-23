@@ -14,6 +14,19 @@
   </div>
   {% endif %}
 
+  {% if installed and installed.target_label %}
+  <div class="text-[10px] text-cyan-300 bg-cyan-900/30 border border-cyan-700/40 rounded p-1.5">
+    Showing install-state for target: <span class="font-semibold">{{ installed.target_label }}</span>
+    · skills in target: {{ installed.installed_skills | length }}
+    · docs found: {{ installed.scaffolded_docs | length }}
+    {% if installed.installed_statusline %}· statusline: {{ installed.installed_statusline }}{% endif %}
+  </div>
+  {% else %}
+  <div class="text-[10px] text-slate-500">
+    Select a target on the left to see which catalog items are already installed there.
+  </div>
+  {% endif %}
+
   <div id="catalog-editor"></div>
 
   <div class="flex gap-2 border-b border-slate-800 pb-1">
@@ -82,11 +95,13 @@
     {% if skills %}
     <ul class="grid grid-cols-2 gap-2">
       {% for s in skills %}
-      <li class="bg-slate-800 rounded p-3">
+      {% set is_installed = installed and s.name in installed.installed_skills %}
+      <li class="rounded p-3 {% if is_installed %}bg-emerald-900/30 border border-emerald-600/60 ring-1 ring-emerald-500/30{% else %}bg-slate-800 border border-transparent{% endif %}">
         <div class="flex items-center justify-between">
           <div>
             <span class="font-medium text-slate-100">{{ s.name }}</span>
             {% if s.version %}<span class="text-slate-500 text-[10px]">v{{ s.version }}</span>{% endif %}
+            {% if is_installed %}<span class="ml-1 text-[9px] bg-emerald-700/70 text-emerald-100 px-1.5 py-0.5 rounded">✓ installed</span>{% endif %}
           </div>
           <div class="flex gap-1">
             <button class="text-[10px] bg-emerald-700 hover:bg-emerald-600 px-2 py-0.5 rounded"
@@ -139,9 +154,12 @@
     {% if statuslines %}
     <ul class="grid grid-cols-2 gap-2">
       {% for s in statuslines %}
-      <li class="bg-slate-800 rounded p-3">
+      {% set is_current = installed and installed.installed_statusline == s.slug %}
+      <li class="rounded p-3 {% if is_current %}bg-emerald-900/30 border border-emerald-600/60 ring-1 ring-emerald-500/30{% else %}bg-slate-800 border border-transparent{% endif %}">
         <div class="flex items-center justify-between">
-          <span class="font-medium text-slate-100">{{ s.name }} <span class="text-slate-500 text-[10px]">{{ s.slug }}</span></span>
+          <span class="font-medium text-slate-100">{{ s.name }} <span class="text-slate-500 text-[10px]">{{ s.slug }}</span>
+            {% if is_current %}<span class="ml-1 text-[9px] bg-emerald-700/70 text-emerald-100 px-1.5 py-0.5 rounded">✓ active</span>{% endif %}
+          </span>
           <div class="flex gap-1">
             <button class="text-[10px] bg-emerald-700 hover:bg-emerald-600 px-2 py-0.5 rounded"
                     @click="stage('install_statusline', { slug: '{{ s.slug }}' })">
@@ -224,9 +242,11 @@
     {% if doc_prompts %}
     <div class="grid grid-cols-3 gap-2">
       {% for d in doc_prompts %}
-      <label class="flex items-center gap-1 bg-slate-800 rounded p-2">
+      {% set has_doc = installed and d.kind in installed.scaffolded_docs %}
+      <label class="flex items-center gap-1 rounded p-2 {% if has_doc %}bg-emerald-900/30 border border-emerald-600/60{% else %}bg-slate-800 border border-transparent{% endif %}">
         <input type="checkbox" :value="'{{ d.kind }}'" x-model="picks" class="accent-emerald-500">
         <span class="text-slate-200">{{ d.kind }}</span>
+        {% if has_doc %}<span class="ml-auto text-[9px] text-emerald-300">✓</span>{% endif %}
       </label>
       {% endfor %}
     </div>
