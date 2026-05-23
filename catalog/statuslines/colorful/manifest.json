@@ -1,0 +1,6 @@
+{
+  "name": "colorful",
+  "description": "Colorful jq-based status line showing model, current directory, and 5h / 7d rate-limit progress.",
+  "source_git": "",
+  "version": "1.0.0"
+}

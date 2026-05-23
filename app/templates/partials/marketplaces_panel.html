@@ -1,0 +1,56 @@
+<div class="text-xs">
+  <p class="text-slate-400 mb-2">
+    Marketplaces live in <code>~/.claude/settings.json</code> under <code>extraKnownMarketplaces</code>.
+    Adding one stages a settings patch on the <strong>global</strong> target.
+  </p>
+
+  <h4 class="text-slate-400 uppercase tracking-wide text-[10px] mb-1">Current</h4>
+  {% if marketplaces %}
+  <ul class="space-y-1 mb-3">
+    {% for name, source in marketplaces.items() %}
+    <li class="bg-slate-800 rounded p-2">
+      <div class="font-medium text-slate-100">{{ name }}</div>
+      <pre class="text-[10px] text-slate-400 mt-1">{{ source | pretty_json }}</pre>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="text-slate-500 mb-3">None yet.</p>
+  {% endif %}
+
+  <h4 class="text-slate-400 uppercase tracking-wide text-[10px] mb-1">Add</h4>
+  <form x-data="{ name: '', source: '' }" @submit.prevent="
+        if (!name.trim()) { alert('name required'); return; }
+        let src;
+        try { src = JSON.parse(source); }
+        catch { src = source; }
+        if (typeof src === 'string' && !src.trim()) { alert('source required'); return; }
+        await fetch('/stage/add', {
+          method: 'POST',
+          body: (() => {
+            const fd = new FormData();
+            fd.append('kind', 'patch_settings');
+            fd.append('payload', JSON.stringify({ patch: { extraKnownMarketplaces: { [name]: src } } }));
+            fd.append('target_ids', 'global');
+            return fd;
+          })()
+        });
+        htmx.trigger('body', 'cart:refresh');
+        name = ''; source = '';
+        ">
+    <div class="grid grid-cols-2 gap-2">
+      <input x-model="name" placeholder="marketplace name (e.g. claude-mem@thedotmack)"
+             class="bg-slate-900 px-2 py-1 rounded border border-slate-700 focus:outline-none focus:border-slate-500">
+      <input x-model="source" placeholder='source (git URL string or JSON object)'
+             class="bg-slate-900 px-2 py-1 rounded border border-slate-700 focus:outline-none focus:border-slate-500">
+    </div>
+    <button type="submit"
+            class="mt-2 text-[10px] bg-emerald-700 hover:bg-emerald-600 px-3 py-1 rounded">
+      Stage add (global)
+    </button>
+    <p class="text-[10px] text-slate-500 mt-1">
+      Tip: source can be a git URL string like <code>https://github.com/owner/repo</code>, or a JSON
+      object like <code>{"source":"github","owner":"x","repo":"y"}</code>.
+    </p>
+  </form>
+</div>

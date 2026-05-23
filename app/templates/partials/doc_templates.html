@@ -1,0 +1,33 @@
+<div class="text-xs">
+  <p class="text-slate-400 mb-2">Pick a starting point. <strong>Add</strong> writes the predesigned prompt as-is; <strong>Copy &amp; edit</strong> opens the editor pre-filled.</p>
+  <ul class="space-y-1">
+    {% for t in items %}
+    <li class="bg-slate-800 rounded p-2">
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex-1">
+          <span class="font-medium text-slate-100">{{ t.name }}</span>
+          {% if t.id in existing %}<span class="text-[10px] text-amber-300 ml-1">(already in catalog)</span>{% endif %}
+        </div>
+        <div class="flex gap-1">
+          <button class="text-[10px] bg-emerald-700 hover:bg-emerald-600 px-2 py-0.5 rounded
+                         {% if t.id in existing %}opacity-50 cursor-not-allowed{% endif %}"
+                  {% if t.id not in existing %}
+                  hx-post="/catalog/doc-prompts/from-template/{{ t.id }}"
+                  hx-target="#doc-prompts-manage"
+                  hx-swap="innerHTML"
+                  {% else %}disabled{% endif %}>
+            + Add
+          </button>
+          <button class="text-[10px] bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded"
+                  hx-get="/catalog/doc-prompts/templates/{{ t.id }}/copy"
+                  hx-target="#doc-prompt-editor"
+                  hx-swap="innerHTML">
+            📋 Copy &amp; edit
+          </button>
+        </div>
+      </div>
+      <p class="text-slate-400 text-[10px] mt-1">{{ t.description }}</p>
+    </li>
+    {% endfor %}
+  </ul>
+</div>

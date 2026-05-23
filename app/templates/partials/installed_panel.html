@@ -1,0 +1,59 @@
+<div class="space-y-3 text-xs">
+
+  <div>
+    <h3 class="text-slate-300 font-semibold mb-1">Target: <span class="text-slate-100">{{ target.label }}</span></h3>
+    <p class="text-[10px] text-slate-500">{{ target.claude_dir }} ({{ target.kind }})</p>
+  </div>
+
+  <div>
+    <h4 class="text-slate-400 uppercase tracking-wide text-[10px] mb-1">User-installed skills ({{ user_skills|length }})</h4>
+    {% if user_skills %}
+    <ul class="grid grid-cols-2 gap-2">
+      {% for s in user_skills %}
+      <li class="bg-slate-800 rounded p-2">
+        <div class="flex items-center justify-between">
+          <span class="font-medium text-slate-100">{{ s.name }}{% if s.version %} <span class="text-slate-500">v{{ s.version }}</span>{% endif %}</span>
+          <button class="text-rose-400 hover:text-rose-300 text-[10px]"
+                  @click="stage('remove_skill', { name: '{{ s.name }}' })">remove</button>
+        </div>
+        <p class="text-slate-400 text-[10px] mt-1 line-clamp-3">{{ s.description }}</p>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-slate-500">No user-installed skills.</p>
+    {% endif %}
+  </div>
+
+  {% if plugin_skills %}
+  <div>
+    <h4 class="text-slate-400 uppercase tracking-wide text-[10px] mb-1">From plugins ({{ plugin_skills|length }}) — read-only</h4>
+    <ul class="grid grid-cols-2 gap-2">
+      {% for s in plugin_skills %}
+      <li class="bg-slate-800/50 rounded p-2">
+        <div class="font-medium text-slate-200">{{ s.name }} <span class="text-slate-500 text-[10px]">{{ s.source }}</span></div>
+        <p class="text-slate-400 text-[10px] mt-1 line-clamp-3">{{ s.description }}</p>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <div>
+    <h4 class="text-slate-400 uppercase tracking-wide text-[10px] mb-1">Settings ({{ target.settings_path.name }})</h4>
+    <pre class="bg-slate-800 rounded p-2 max-h-60 overflow-auto text-slate-200">{{ settings | pretty_json }}</pre>
+  </div>
+
+  <div>
+    <h4 class="text-slate-400 uppercase tracking-wide text-[10px] mb-1">Status line</h4>
+    {% if statusline.configured_command %}
+    <p class="text-slate-300">command: <code class="text-emerald-300">{{ statusline.configured_command }}</code></p>
+    <p class="text-slate-500">resolved: {{ statusline.resolved_path }} ({% if statusline.exists %}exists{% else %}missing{% endif %})</p>
+    {% if statusline.preview %}
+    <pre class="bg-slate-800 rounded p-2 max-h-32 overflow-auto text-slate-300 mt-1">{{ statusline.preview }}</pre>
+    {% endif %}
+    {% else %}
+    <p class="text-slate-500">no statusLine configured</p>
+    {% endif %}
+  </div>
+</div>

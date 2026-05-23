@@ -1,0 +1,16 @@
+<div class="text-xs">
+  <h5 class="text-slate-300 font-semibold mb-1">Update-all results</h5>
+  <ul class="space-y-1">
+    {% for r in results %}
+    <li class="{% if r.ok %}bg-emerald-900/30 text-emerald-200{% elif r.skipped %}bg-slate-800 text-slate-400{% else %}bg-rose-900/30 text-rose-200{% endif %} rounded p-1.5 flex items-center justify-between">
+      <span><code class="text-slate-100">{{ r.slug }}</code></span>
+      <span class="text-[10px]">
+        {% if r.ok %}updated @ {{ r.sha }}
+        {% elif r.skipped %}skipped: {{ r.msg }}
+        {% else %}failed: {{ r.msg }}
+        {% endif %}
+      </span>
+    </li>
+    {% endfor %}
+  </ul>
+</div>

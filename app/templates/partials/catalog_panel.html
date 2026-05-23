@@ -1,0 +1,270 @@
+<div class="space-y-4 text-xs"
+     x-data="{
+       tab: (localStorage.getItem('nc.catalog.tab') || 'skills'),
+       showAddSkill: false
+     }"
+     x-init="$watch('tab', v => localStorage.setItem('nc.catalog.tab', v))">
+
+  {% if flash %}
+  <div class="text-xs text-emerald-200 bg-emerald-900/40 border border-emerald-700/40 rounded p-2"
+       x-data="{ visible: true }"
+       x-show="visible"
+       x-init="setTimeout(() => visible = false, 5000)">
+    ✓ {{ flash }}
+  </div>
+  {% endif %}
+
+  <div id="catalog-editor"></div>
+
+  <div class="flex gap-2 border-b border-slate-800 pb-1">
+    <button @click="tab='skills'"       :class="tab==='skills'       ? 'text-emerald-300' : 'text-slate-400'">Skills ({{ skills|length }})</button>
+    <button @click="tab='statuslines'"  :class="tab==='statuslines'  ? 'text-emerald-300' : 'text-slate-400'">Status lines ({{ statuslines|length }})</button>
+    <button @click="tab='presets'"      :class="tab==='presets'      ? 'text-emerald-300' : 'text-slate-400'">Settings presets ({{ presets|length }})</button>
+    <button @click="tab='docs'"         :class="tab==='docs'         ? 'text-emerald-300' : 'text-slate-400'">Doc scaffold</button>
+    <button @click="tab='marketplaces'" :class="tab==='marketplaces' ? 'text-emerald-300' : 'text-slate-400'">Marketplaces</button>
+  </div>
+
+  <div x-show="tab==='skills'" x-data="{ showLinks: false }">
+    <div class="flex items-center justify-between mb-2">
+      <p class="text-slate-400">Curated skills in <code>catalog/skills/</code>. Stage them to install into selected targets.</p>
+      <div class="flex gap-1">
+        <button class="text-[10px] bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded"
+                @click="showLinks = !showLinks"
+                x-text="showLinks ? 'Hide links' : 'Skill links'"></button>
+        <button class="text-[10px] bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded"
+                hx-post="/catalog/skills/update-all"
+                hx-target="#update-all-results"
+                hx-swap="innerHTML"
+                hx-confirm="Re-fetch every catalog skill from its source_git? This overwrites local edits.">
+          ↻ Update all
+        </button>
+        <button class="text-[10px] bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded"
+                @click="showAddSkill = !showAddSkill"
+                x-text="showAddSkill ? 'Cancel' : '+ Add skill from git'"></button>
+      </div>
+    </div>
+
+    <div id="update-all-results" class="mb-2"></div>
+
+    <div x-show="showLinks" x-cloak class="mb-3 border border-slate-700 rounded p-2">
+      <div id="skill-links-panel"
+           hx-get="/catalog/skill-links"
+           hx-trigger="load"
+           hx-swap="innerHTML">
+        <p class="text-[10px] text-slate-500">loading links…</p>
+      </div>
+    </div>
+
+    <div x-show="showAddSkill" x-cloak class="bg-slate-800 rounded p-3 mb-3 border border-slate-700">
+      <form hx-post="/catalog/skills"
+            hx-target="#catalog-panel"
+            hx-swap="innerHTML"
+            hx-on::after-request="document.querySelector('[x-data]').__x?.$data && (document.querySelector('[x-data]').__x.$data.showAddSkill = false)">
+        <div class="grid grid-cols-2 gap-2">
+          <input name="slug" placeholder="slug (folder name, e.g. my-skill)" required pattern="[A-Za-z0-9_\-]+"
+                 class="bg-slate-900 px-2 py-1 rounded border border-slate-700 focus:outline-none focus:border-slate-500">
+          <input name="source_git" placeholder="git URL (https or ssh)" required
+                 class="bg-slate-900 px-2 py-1 rounded border border-slate-700 focus:outline-none focus:border-slate-500">
+          <input name="source_subpath" placeholder="subpath in repo (optional, e.g. skills/foo)"
+                 class="bg-slate-900 px-2 py-1 rounded border border-slate-700 focus:outline-none focus:border-slate-500 col-span-2">
+          <input name="name" placeholder="display name (optional — inferred from SKILL.md)"
+                 class="bg-slate-900 px-2 py-1 rounded border border-slate-700 focus:outline-none focus:border-slate-500 col-span-2">
+          <textarea name="description" rows="2" placeholder="description (optional)"
+                    class="bg-slate-900 px-2 py-1 rounded border border-slate-700 focus:outline-none focus:border-slate-500 col-span-2"></textarea>
+        </div>
+        <button class="mt-2 text-[10px] bg-emerald-700 hover:bg-emerald-600 px-3 py-1 rounded">
+          Clone &amp; add to catalog
+        </button>
+        <p class="text-[10px] text-slate-500 mt-1">Clones the repo (or a subpath) into <code>catalog/skills/&lt;slug&gt;/</code> and writes <code>manifest.json</code>. Does not install into any target — stage that separately.</p>
+      </form>
+    </div>
+
+    {% if skills %}
+    <ul class="grid grid-cols-2 gap-2">
+      {% for s in skills %}
+      <li class="bg-slate-800 rounded p-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="font-medium text-slate-100">{{ s.name }}</span>
+            {% if s.version %}<span class="text-slate-500 text-[10px]">v{{ s.version }}</span>{% endif %}
+          </div>
+          <div class="flex gap-1">
+            <button class="text-[10px] bg-emerald-700 hover:bg-emerald-600 px-2 py-0.5 rounded"
+                    @click="stage('install_skill', { slug: '{{ s.slug }}' })">
+              Stage install
+            </button>
+            {% if s.source_git %}
+            <button class="text-[10px] bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded"
+                    hx-post="/catalog/skills/{{ s.slug }}/update"
+                    hx-swap="none"
+                    hx-on::after-request="htmx.trigger('#catalog-panel', 'load')">
+              Update from git
+            </button>
+            {% endif %}
+            <button class="text-[10px] bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded"
+                    hx-get="/catalog/skills/{{ s.slug }}/edit"
+                    hx-target="#catalog-editor"
+                    hx-swap="innerHTML">
+              Edit
+            </button>
+            <button class="text-[10px] bg-rose-800 hover:bg-rose-700 px-2 py-0.5 rounded"
+                    hx-delete="/catalog/skills/{{ s.slug }}"
+                    hx-target="#catalog-panel"
+                    hx-swap="innerHTML"
+                    hx-confirm="Delete {{ s.slug }} from the catalog? (does not touch installed copies)">
+              Del
+            </button>
+          </div>
+        </div>
+        <p class="text-slate-400 text-[10px] mt-2 whitespace-pre-line">{{ s.description }}</p>
+        {% if s.source_git %}
+        <p class="text-[10px] text-slate-500 mt-2">source: <a class="text-emerald-400 hover:underline" href="{{ s.source_git }}" target="_blank" rel="noopener">{{ s.source_git }}</a>{% if s.sha %} @ <code>{{ s.sha[:8] }}</code>{% endif %}</p>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-slate-500">No catalog skills yet. Use <em>+ Add skill from git</em> above, or drop a folder into <code>catalog/skills/&lt;slug&gt;/</code> manually.</p>
+    {% endif %}
+  </div>
+
+  <div x-show="tab==='statuslines'" x-cloak>
+    <div class="flex items-center justify-between mb-2">
+      <p class="text-slate-400">Status line scripts in <code>catalog/statuslines/</code>.</p>
+      <button class="text-[10px] bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded"
+              hx-get="/catalog/statuslines/new"
+              hx-target="#catalog-editor"
+              hx-swap="innerHTML">+ New</button>
+    </div>
+    {% if statuslines %}
+    <ul class="grid grid-cols-2 gap-2">
+      {% for s in statuslines %}
+      <li class="bg-slate-800 rounded p-3">
+        <div class="flex items-center justify-between">
+          <span class="font-medium text-slate-100">{{ s.name }} <span class="text-slate-500 text-[10px]">{{ s.slug }}</span></span>
+          <div class="flex gap-1">
+            <button class="text-[10px] bg-emerald-700 hover:bg-emerald-600 px-2 py-0.5 rounded"
+                    @click="stage('install_statusline', { slug: '{{ s.slug }}' })">
+              Stage install
+            </button>
+            <button class="text-[10px] bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded"
+                    hx-get="/catalog/statuslines/{{ s.slug }}/edit"
+                    hx-target="#catalog-editor"
+                    hx-swap="innerHTML">Edit</button>
+            <button class="text-[10px] bg-rose-800 hover:bg-rose-700 px-2 py-0.5 rounded"
+                    hx-delete="/catalog/statuslines/{{ s.slug }}"
+                    hx-target="#catalog-panel"
+                    hx-swap="innerHTML"
+                    hx-confirm="Delete statusline {{ s.slug }}?">Del</button>
+          </div>
+        </div>
+        <p class="text-slate-400 text-[10px] mt-1">{{ s.description }}</p>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-slate-500">No catalog status lines.</p>
+    {% endif %}
+  </div>
+
+  <div x-show="tab==='presets'" x-cloak x-data="{ showLib: false }">
+    <div class="flex items-center justify-between mb-2">
+      <p class="text-slate-400">Settings patches in <code>catalog/settings-presets/</code>. Each preset is deep-merged into the target's settings file when applied.</p>
+      <div class="flex gap-1">
+        <button class="text-[10px] bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded"
+                @click="showLib = !showLib"
+                x-text="showLib ? 'Hide library' : 'From template'"></button>
+        <button class="text-[10px] bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded"
+                hx-get="/catalog/presets/new"
+                hx-target="#catalog-editor"
+                hx-swap="innerHTML">+ New (blank)</button>
+      </div>
+    </div>
+
+    <div x-show="showLib" x-cloak class="mb-3"
+         hx-get="/catalog/presets/templates"
+         hx-trigger="load"
+         hx-swap="innerHTML">
+      <p class="text-[10px] text-slate-500">loading templates…</p>
+    </div>
+    {% if presets %}
+    <ul class="space-y-2">
+      {% for p in presets %}
+      <li class="bg-slate-800 rounded p-3">
+        <div class="flex items-center justify-between">
+          <span class="font-medium text-slate-100">{{ p.name }} <span class="text-slate-500 text-[10px]">{{ p.slug }}</span></span>
+          <div class="flex gap-1">
+            <button class="text-[10px] bg-emerald-700 hover:bg-emerald-600 px-2 py-0.5 rounded"
+                    @click='stage("patch_settings", { patch: {{ p.body | pretty_json | safe }} })'>
+              Stage patch
+            </button>
+            <button class="text-[10px] bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded"
+                    hx-get="/catalog/presets/{{ p.slug }}/edit"
+                    hx-target="#catalog-editor"
+                    hx-swap="innerHTML">Edit</button>
+            <button class="text-[10px] bg-rose-800 hover:bg-rose-700 px-2 py-0.5 rounded"
+                    hx-delete="/catalog/presets/{{ p.slug }}"
+                    hx-target="#catalog-panel"
+                    hx-swap="innerHTML"
+                    hx-confirm="Delete preset {{ p.slug }}?">Del</button>
+          </div>
+        </div>
+        <p class="text-slate-400 text-[10px] mt-1">{{ p.description }}</p>
+        <pre class="bg-slate-900 rounded p-2 mt-1 max-h-32 overflow-auto text-slate-300">{{ p.body | pretty_json }}</pre>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-slate-500">No settings presets.</p>
+    {% endif %}
+  </div>
+
+  <div x-show="tab==='docs'" x-cloak x-data="{ picks: [], showManage: false }">
+    <p class="text-slate-400 mb-2">Pick which doc files you want Claude to create in the selected project. The tool writes a prompt file into <code>.claude/.nekoclaude-handoff-prompt.md</code>; you then run <code>claude &lt; …</code> in that project to generate the docs.</p>
+    {% if doc_prompts %}
+    <div class="grid grid-cols-3 gap-2">
+      {% for d in doc_prompts %}
+      <label class="flex items-center gap-1 bg-slate-800 rounded p-2">
+        <input type="checkbox" :value="'{{ d.kind }}'" x-model="picks" class="accent-emerald-500">
+        <span class="text-slate-200">{{ d.kind }}</span>
+      </label>
+      {% endfor %}
+    </div>
+    <div class="flex items-center gap-2 mt-3">
+      <button class="text-xs bg-emerald-700 hover:bg-emerald-600 px-3 py-1 rounded"
+              @click="stage('scaffold_docs', { kinds: picks })"
+              :disabled="picks.length === 0">
+        Stage scaffold
+      </button>
+      <button class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded"
+              @click="showManage = !showManage"
+              x-text="showManage ? 'Hide manager' : 'Manage prompts'"></button>
+    </div>
+    {% else %}
+    <p class="text-slate-500 mb-2">No doc prompts found in <code>catalog/doc-prompts/</code>.</p>
+    <button class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded"
+            @click="showManage = true">
+      Add the first one
+    </button>
+    {% endif %}
+
+    <div x-show="showManage" x-cloak class="mt-4 border-t border-slate-700 pt-3">
+      <h4 class="text-slate-300 text-xs font-semibold mb-2">Doc prompt manager</h4>
+      <div id="doc-prompts-manage"
+           hx-get="/catalog/doc-prompts"
+           hx-trigger="load, every-time-shown"
+           hx-swap="innerHTML">
+        <p class="text-[10px] text-slate-500">loading…</p>
+      </div>
+    </div>
+  </div>
+
+  <div x-show="tab==='marketplaces'" x-cloak>
+    <div id="marketplaces-panel"
+         hx-get="/catalog/marketplaces"
+         hx-trigger="load"
+         hx-swap="innerHTML">
+      <p class="text-[10px] text-slate-500">loading…</p>
+    </div>
+  </div>
+</div>

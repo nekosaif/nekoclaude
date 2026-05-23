@@ -1,0 +1,33 @@
+{% if cart %}
+<ul class="space-y-1 text-xs">
+  {% for op in cart %}
+  <li class="bg-slate-800 rounded p-2">
+    <div class="flex items-start gap-2">
+      <div class="flex-1">
+        <div class="text-slate-200">
+          <span class="font-medium">{{ op.kind }}</span>
+          {% if op.payload.slug %} → <code class="text-emerald-300">{{ op.payload.slug }}</code>{% endif %}
+          {% if op.payload.name %} → <code class="text-rose-300">{{ op.payload.name }}</code>{% endif %}
+          {% if op.payload.kinds %} → {{ op.payload.kinds | join(", ") }}{% endif %}
+        </div>
+        <div class="text-[10px] text-slate-500">
+          targets:
+          {% for tid in op.target_ids %}
+            {% if tid in targets %}{{ targets[tid].label }}{% else %}{{ tid }}{% endif %}{% if not loop.last %}, {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+      <button class="text-[10px] bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded"
+              hx-get="/stage/diff/{{ loop.index0 }}"
+              hx-target="#diff-{{ loop.index0 }}"
+              hx-swap="innerHTML">Diff</button>
+      <button hx-post="/stage/remove/{{ loop.index0 }}" hx-target="#cart" hx-swap="innerHTML"
+              class="text-slate-500 hover:text-rose-400">×</button>
+    </div>
+    <div id="diff-{{ loop.index0 }}" data-diff-host class="mt-2"></div>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="text-xs text-slate-500">Cart is empty. Stage changes from the catalog.</p>
+{% endif %}

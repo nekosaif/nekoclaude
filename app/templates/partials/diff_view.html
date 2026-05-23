@@ -1,0 +1,63 @@
+<div class="bg-slate-900 rounded p-2 text-xs">
+  <div class="flex items-center justify-between mb-2">
+    <span class="text-slate-300">
+      Diff preview: <span class="font-medium">{{ op.kind }}</span>
+      {% if op.payload.slug %} · <code class="text-emerald-300">{{ op.payload.slug }}</code>{% endif %}
+      {% if op.payload.name %} · <code class="text-rose-300">{{ op.payload.name }}</code>{% endif %}
+    </span>
+    <button class="text-[10px] text-slate-500 hover:text-slate-300"
+            onclick="this.closest('[data-diff-host]').innerHTML=''">close</button>
+  </div>
+
+  {% for t in per_target %}
+  <div class="mb-3">
+    <h5 class="text-[11px] text-slate-400 mb-1">target: <span class="text-slate-200">{{ t.label }}</span></h5>
+    {% if t.error %}
+    <p class="text-rose-300">{{ t.error }}</p>
+    {% endif %}
+    {% for f in t.files %}
+    <div class="border border-slate-800 rounded mb-1">
+      <div class="px-2 py-1 bg-slate-800 flex items-center justify-between">
+        <code class="text-slate-200">{{ f.path }}</code>
+        <span class="text-[10px]
+          {% if f.kind == 'added' %}text-emerald-300
+          {% elif f.kind == 'removed' %}text-rose-300
+          {% elif f.kind == 'modified' %}text-amber-300
+          {% elif f.kind == 'unchanged' %}text-slate-500
+          {% elif f.kind == 'noop' %}text-slate-500
+          {% else %}text-rose-300{% endif %}">
+          {{ f.kind }}
+        </span>
+      </div>
+      {% if f.error %}
+      <p class="px-2 py-1 text-rose-300">{{ f.error }}</p>
+      {% elif f.kind not in ('unchanged', 'noop') and f.rows %}
+      <table class="w-full table-fixed text-[11px] font-mono">
+        <tbody>
+        {% for row in f.rows %}
+        {% set lcls =
+          'bg-rose-900/30 text-rose-200' if row.tag in ('delete','replace') and row.left is not none
+          else ('bg-slate-900 text-slate-700' if row.left is none else 'text-slate-300') %}
+        {% set rcls =
+          'bg-emerald-900/30 text-emerald-200' if row.tag in ('insert','replace') and row.right is not none
+          else ('bg-slate-900 text-slate-700' if row.right is none else 'text-slate-300') %}
+        <tr>
+          <td class="w-1/2 align-top px-2 py-0.5 border-r border-slate-800 whitespace-pre-wrap break-all {{ lcls }}">{% if row.left is none %} {% else %}{{ row.left }}{% endif %}</td>
+          <td class="w-1/2 align-top px-2 py-0.5 whitespace-pre-wrap break-all {{ rcls }}">{% if row.right is none %} {% else %}{{ row.right }}{% endif %}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% elif f.kind == 'unchanged' %}
+      <p class="px-2 py-1 text-slate-500 text-[10px]">no change</p>
+      {% elif f.kind == 'noop' %}
+      <p class="px-2 py-1 text-slate-500 text-[10px]">already absent</p>
+      {% endif %}
+    </div>
+    {% endfor %}
+    {% if not t.files %}
+    <p class="text-slate-500 text-[10px]">no files to show</p>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>

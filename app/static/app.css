@@ -1,0 +1,6 @@
+/* Minimal additions — Tailwind handles most styling. */
+[x-cloak] { display: none !important; }
+
+pre, code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace; }
+.scroll-x { overflow-x: auto; }
+.scroll-y { overflow-y: auto; }

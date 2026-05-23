@@ -1,0 +1,34 @@
+<div class="text-xs">
+  <p class="text-slate-400 mb-2">Pick a starting point. <strong>Add</strong> creates the catalog entry as-is; <strong>Copy &amp; edit</strong> opens the editor pre-filled so you can rename and tweak before saving.</p>
+  <ul class="space-y-1">
+    {% for t in items %}
+    <li class="bg-slate-800 rounded p-2">
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex-1">
+          <span class="font-medium text-slate-100">{{ t.name }}</span>
+          <span class="text-slate-500 text-[10px]">{{ t.id }}</span>
+          {% if t.id in existing_slugs %}<span class="text-[10px] text-amber-300 ml-1">(slug taken)</span>{% endif %}
+        </div>
+        <div class="flex gap-1">
+          <button class="text-[10px] bg-emerald-700 hover:bg-emerald-600 px-2 py-0.5 rounded
+                         {% if t.id in existing_slugs %}opacity-50 cursor-not-allowed{% endif %}"
+                  {% if t.id not in existing_slugs %}
+                  hx-post="/catalog/presets/from-template/{{ t.id }}"
+                  hx-target="#catalog-panel"
+                  hx-swap="innerHTML"
+                  {% else %}disabled{% endif %}>
+            + Add
+          </button>
+          <button class="text-[10px] bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded"
+                  hx-get="/catalog/presets/templates/{{ t.id }}/copy"
+                  hx-target="#catalog-editor"
+                  hx-swap="innerHTML">
+            📋 Copy &amp; edit
+          </button>
+        </div>
+      </div>
+      <p class="text-slate-400 text-[10px] mt-1">{{ t.description }}</p>
+    </li>
+    {% endfor %}
+  </ul>
+</div>

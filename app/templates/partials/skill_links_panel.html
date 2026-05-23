@@ -1,0 +1,65 @@
+<div class="text-xs">
+  <p class="text-slate-400 mb-2">Bookmarks of skill source URLs. Each link can be installed into the catalog (clones the repo) and remains in the registry so you can re-install on a fresh machine.</p>
+
+  <details class="mb-2 bg-slate-800 rounded p-2">
+    <summary class="cursor-pointer text-slate-200">+ Add a link</summary>
+    <form hx-post="/catalog/skill-links"
+          hx-target="#skill-links-panel"
+          hx-swap="innerHTML"
+          class="mt-2 grid grid-cols-2 gap-2">
+      <input name="url" required placeholder="git URL (https://…)"
+             class="bg-slate-900 px-2 py-1 rounded border border-slate-700 col-span-2">
+      <input name="subpath" placeholder="subpath in repo (optional, e.g. skills/foo)"
+             class="bg-slate-900 px-2 py-1 rounded border border-slate-700 col-span-2">
+      <input name="suggested_slug" placeholder="suggested slug for install"
+             class="bg-slate-900 px-2 py-1 rounded border border-slate-700">
+      <input name="name" placeholder="display name (optional)"
+             class="bg-slate-900 px-2 py-1 rounded border border-slate-700">
+      <textarea name="description" rows="2" placeholder="description"
+                class="bg-slate-900 px-2 py-1 rounded border border-slate-700 col-span-2"></textarea>
+      <button class="text-[10px] bg-emerald-700 hover:bg-emerald-600 px-3 py-1 rounded col-span-2">Save link</button>
+    </form>
+  </details>
+
+  {% if links %}
+  <ul class="space-y-1">
+    {% for l in links %}
+    <li class="bg-slate-800 rounded p-2">
+      <div class="flex items-start justify-between gap-2">
+        <div class="flex-1 min-w-0">
+          <div class="text-slate-100 font-medium truncate">{{ l.name or l.url }}</div>
+          <a href="{{ l.url }}" target="_blank" rel="noopener" class="text-emerald-400 hover:underline text-[10px] break-all">{{ l.url }}</a>
+          {% if l.subpath %}<span class="text-slate-500 text-[10px]"> · {{ l.subpath }}</span>{% endif %}
+          {% if l.description %}<p class="text-slate-400 text-[10px] mt-1">{{ l.description }}</p>{% endif %}
+          {% if l.url in in_catalog %}<span class="text-[10px] text-amber-300">(already in catalog)</span>{% endif %}
+        </div>
+        <div class="flex gap-1 flex-shrink-0">
+          <input name="slug" value="{{ l.suggested_slug }}" placeholder="slug"
+                 class="w-24 bg-slate-900 px-2 py-0.5 rounded border border-slate-700 text-[10px]"
+                 form="install-form-{{ l.id }}">
+          <form id="install-form-{{ l.id }}"
+                hx-post="/catalog/skill-links/{{ l.id }}/install"
+                hx-target="#catalog-panel"
+                hx-swap="innerHTML"
+                hx-confirm="Clone {{ l.url }} into catalog?"
+                class="inline">
+            <button class="text-[10px] bg-emerald-700 hover:bg-emerald-600 px-2 py-0.5 rounded">
+              Install
+            </button>
+          </form>
+          <button class="text-[10px] bg-rose-800 hover:bg-rose-700 px-2 py-0.5 rounded"
+                  hx-delete="/catalog/skill-links/{{ l.id }}"
+                  hx-target="#skill-links-panel"
+                  hx-swap="innerHTML"
+                  hx-confirm="Remove this link from the registry? (catalog skills are not affected)">
+            Del
+          </button>
+        </div>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="text-slate-500">No skill links saved yet.</p>
+  {% endif %}
+</div>

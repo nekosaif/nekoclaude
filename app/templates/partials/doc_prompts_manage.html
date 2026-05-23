@@ -1,0 +1,57 @@
+<div x-data="{ editing: null, showLib: false }">
+
+  {% if flash %}
+  <div class="text-[10px] text-emerald-300 mb-2">{{ flash }}</div>
+  {% endif %}
+
+  <div class="flex items-center justify-between mb-2">
+    <p class="text-slate-400">Edit / add / delete the doc-scaffold prompt files in <code>catalog/doc-prompts/</code>.</p>
+    <div class="flex gap-1">
+      <button class="text-[10px] bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded"
+              @click="showLib = !showLib"
+              x-text="showLib ? 'Hide library' : 'From template'"></button>
+      <button class="text-[10px] bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded"
+              hx-get="/catalog/doc-prompts/new"
+              hx-target="#doc-prompt-editor"
+              hx-swap="innerHTML">
+        + New (blank)
+      </button>
+    </div>
+  </div>
+
+  <div x-show="showLib" x-cloak class="mb-3"
+       hx-get="/catalog/doc-prompts/templates"
+       hx-trigger="load"
+       hx-swap="innerHTML">
+    <p class="text-[10px] text-slate-500">loading templates…</p>
+  </div>
+
+  {% if doc_prompts %}
+  <ul class="space-y-1">
+    {% for d in doc_prompts %}
+    <li class="bg-slate-800 rounded p-2 flex items-center justify-between">
+      <span class="text-slate-200">{{ d.kind }}</span>
+      <div class="flex gap-1">
+        <button class="text-[10px] bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded"
+                hx-get="/catalog/doc-prompts/{{ d.kind }}/edit"
+                hx-target="#doc-prompt-editor"
+                hx-swap="innerHTML">
+          Edit
+        </button>
+        <button class="text-[10px] bg-rose-800 hover:bg-rose-700 px-2 py-0.5 rounded"
+                hx-delete="/catalog/doc-prompts/{{ d.kind }}"
+                hx-target="#doc-prompts-manage"
+                hx-swap="innerHTML"
+                hx-confirm="Delete doc prompt {{ d.kind }}?">
+          Delete
+        </button>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="text-slate-500">No doc prompts yet.</p>
+  {% endif %}
+
+  <div id="doc-prompt-editor" class="mt-3"></div>
+</div>

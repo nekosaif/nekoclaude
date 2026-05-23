@@ -1,0 +1,9 @@
+{
+  "name": "humanizer",
+  "description": "Remove signs of AI-generated writing from text. Detects em-dash overuse, rule-of-three, vague attributions, AI vocabulary words, passive voice, negative parallelisms, and more.",
+  "source_git": "",
+  "source_subpath": "",
+  "version": "2.5.1",
+  "sha": "",
+  "last_updated": ""
+}

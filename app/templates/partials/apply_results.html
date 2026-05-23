@@ -1,0 +1,14 @@
+<div class="text-xs space-y-1">
+{% for r in results %}
+  <div class="{% if r.ok %}bg-emerald-900/40{% else %}bg-rose-900/40{% endif %} rounded p-2">
+    <div class="flex justify-between">
+      <span class="text-slate-200">
+        {% if r.target_id in targets %}{{ targets[r.target_id].label }}{% else %}{{ r.target_id }}{% endif %}
+      </span>
+      <span class="text-slate-400 text-[10px]">{{ r.change_id }}</span>
+    </div>
+    {% if r.entry %}<div class="text-slate-400">{{ r.entry.summary }}</div>{% endif %}
+    {% if not r.ok %}<div class="text-rose-300">{{ r.error }}</div>{% endif %}
+  </div>
+{% endfor %}
+</div>

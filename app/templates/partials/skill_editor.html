@@ -1,0 +1,26 @@
+<div class="bg-slate-800 rounded p-3 border border-slate-700">
+  <div class="flex items-center justify-between mb-2">
+    <h4 class="text-slate-200 text-xs font-semibold">Edit catalog skill <code class="text-emerald-300">{{ slug }}</code></h4>
+    <button type="button" class="text-[10px] bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded"
+            onclick="document.getElementById('catalog-editor').innerHTML=''">Close</button>
+  </div>
+
+  <div id="editor-error" class="mb-2"></div>
+
+  <form hx-put="/catalog/skills/{{ slug }}/manifest"
+        hx-target="#catalog-panel"
+        hx-swap="innerHTML">
+    <div class="grid grid-cols-2 gap-2">
+      <input name="name" value="{{ manifest.name or '' }}" placeholder="display name"
+             class="bg-slate-900 px-2 py-1 rounded border border-slate-700 focus:outline-none focus:border-slate-500 col-span-2">
+      <textarea name="description" rows="3" placeholder="description"
+                class="bg-slate-900 px-2 py-1 rounded border border-slate-700 focus:outline-none focus:border-slate-500 col-span-2">{{ manifest.description or '' }}</textarea>
+      <input name="source_git" value="{{ manifest.source_git or '' }}" placeholder="git URL"
+             class="bg-slate-900 px-2 py-1 rounded border border-slate-700 focus:outline-none focus:border-slate-500 col-span-2">
+      <input name="source_subpath" value="{{ manifest.source_subpath or '' }}" placeholder="subpath (optional)"
+             class="bg-slate-900 px-2 py-1 rounded border border-slate-700 focus:outline-none focus:border-slate-500 col-span-2">
+    </div>
+    <p class="text-[10px] text-slate-500 mt-1">Skill content is mirrored from <code>source_git</code> via the Update button; only manifest fields are editable here.</p>
+    <button class="mt-2 text-[10px] bg-emerald-700 hover:bg-emerald-600 px-3 py-1 rounded">Save</button>
+  </form>
+</div>

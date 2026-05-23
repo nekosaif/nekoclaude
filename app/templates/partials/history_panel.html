@@ -1,0 +1,31 @@
+<div class="text-xs space-y-2">
+  <p class="text-slate-400">Target: <span class="text-slate-200">{{ target.label }}</span></p>
+  {% if entries %}
+  <ul class="space-y-1">
+    {% for e in entries %}
+    <li class="bg-slate-800 rounded p-2">
+      <div class="flex items-center justify-between">
+        <div>
+          <span class="text-slate-200">{{ e.summary }}</span>
+          {% if e.kind == "revert" %}<span class="text-amber-300 text-[10px]">(revert)</span>{% endif %}
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-slate-500 text-[10px]">{{ e.ts }}</span>
+          {% if e.kind != "revert" %}
+          <button hx-post="/history/{{ target.id }}/revert/{{ e.change_id }}"
+                  hx-target="#history-panel" hx-swap="innerHTML"
+                  hx-on::after-request="htmx.trigger('body', 'installed:refresh')"
+                  class="text-[10px] bg-amber-700 hover:bg-amber-600 px-2 py-0.5 rounded">
+            Revert
+          </button>
+          {% endif %}
+        </div>
+      </div>
+      <div class="text-[10px] text-slate-500">id: <code>{{ e.change_id }}</code>{% if e.reverted_change_id %} ← reverts {{ e.reverted_change_id }}{% endif %}</div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="text-slate-500">No history for this target yet.</p>
+  {% endif %}
+</div>
